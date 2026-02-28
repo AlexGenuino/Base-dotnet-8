@@ -1,18 +1,19 @@
-﻿using Infra.Persistence;
-using Infra.Repository.IRepositories;
+using Application.Abstractions;
+using Infra.Persistence;
 using Infra.Repository.Repositories;
 
 namespace Infra.Repository.UnitOfWork
 {
-    public class UnitOfWork(TasksDbContext context, IUserRepository userRepository) : IUnitOfWork
+    public class UnitOfWork(TasksDbContext context, IUserRepository userRepository, ICardRepository cardRepository) : IUnitOfWork
     {
         private readonly TasksDbContext _context = context;
 
-        public IUserRepository UserRepository => userRepository ?? new UserRepository(context);
+        public IUserRepository UserRepository => userRepository;
+        public ICardRepository CardRepository => cardRepository;
 
-        public void Commit()
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

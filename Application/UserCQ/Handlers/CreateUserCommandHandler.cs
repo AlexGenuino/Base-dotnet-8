@@ -1,13 +1,13 @@
-﻿using Application.Response;
+using Application.Abstractions;
+using Application.Response;
 using Application.UserCQ.Commands;
 using Application.UserCQ.ViewModels;
 using AutoMapper;
 using Domain.Abstractions;
-using MediatR;
 using Domain.Entity;
-using Infra.Repository.UnitOfWork;
-using OneOf;
 using Domain.Utils;
+using MediatR;
+using OneOf;
 
 namespace Application.UserCQ.Handlers
 {
@@ -19,24 +19,24 @@ namespace Application.UserCQ.Handlers
 
         public async Task<OneOf<RefreshTokenViewModel, ErrorInfo>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var isUniqueEmailAndUsername = _authService.UniqueEmailAndUsername(request.Email!, request.Username!);
+            var emailExists = await _unitOfWork.UserRepository.ExistsByEmailAsync(request.Email!, cancellationToken);
+            var usernameExists = await _unitOfWork.UserRepository.ExistsByUsernameAsync(request.Username!, cancellationToken);
+            var validationError = _authService.GetValidationErrorForEmailAndUsername(emailExists, usernameExists);
 
-            if (isUniqueEmailAndUsername != null)
-                return new ErrorInfo(isUniqueEmailAndUsername.GetDescription());
+            if (validationError is not null)
+                return new ErrorInfo(validationError.Value.GetDescription());
 
             var user = _mapper.Map<User>(request);
             user.RefreshToken = _authService.GenerateRefreshToken();
             user.PasswordHash = _authService.HashingPassword(request.Password!);
 
-            await _unitOfWork.UserRepository.Create(user);
-            _unitOfWork.Commit();
+            await _unitOfWork.UserRepository.CreateAsync(user, cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             var refreshTokenVM = _mapper.Map<RefreshTokenViewModel>(user);
             refreshTokenVM.TokenJWT = _authService.GenerateJWT(user.Email!, user.Username!);
 
-
             return refreshTokenVM;
         }
-        
     }
 }

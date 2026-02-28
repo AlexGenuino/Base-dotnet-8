@@ -1,11 +1,11 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Application.Response
 {
     public record ErrorInfo
     {
         public string? ErrorDescription { get; set; }
-        public int HTTPStatus { get; set; }
+        public int HttpStatus { get; set; }
 
         public string ToJson()
         {
@@ -20,13 +20,13 @@ namespace Application.Response
 
         public ErrorInfo(string error)
         {
-            HTTPStatus = 400;
+            HttpStatus = 400;
             ErrorDescription = error;
         }
 
         public ErrorInfo(string error, int statusCode)
         {
-            HTTPStatus = statusCode;
+            HttpStatus = statusCode;
             ErrorDescription = error;
         }
     }

@@ -1,6 +1,5 @@
-﻿using Domain.Abstractions;
+using Domain.Abstractions;
 using Domain.Enum;
-using Infra.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,10 +9,9 @@ using System.Text;
 
 namespace Services.AuthService
 {
-    public class AuthService(IConfiguration configuration, TasksDbContext context) : IAuthService
+    public class AuthService(IConfiguration configuration) : IAuthService
     {
         private readonly IConfiguration _configuration = configuration;
-        private readonly TasksDbContext _context = context;
 
         public string GenerateJWT(string email, string username)
         {
@@ -28,13 +26,18 @@ namespace Services.AuthService
             {
                 new("Email", email),
                 new("Username", username),
-                new("EmailIdentifier", email.Split("@").ToString()!),
-                new("CurrentTime", DateTime.Now.ToString())
+                new("EmailIdentifier", email.Split('@')[0]),
+                new("CurrentTime", DateTime.UtcNow.ToString("O"))
             };
 
             _ = int.TryParse(_configuration["JWT:TokenExpirationTimeInDays"], out int tokenExpirationTimeInDays);
 
-            var token = new JwtSecurityToken(issuer: issuer, audience: audience, claims: claims, expires: DateTime.Now.AddDays(tokenExpirationTimeInDays), signingCredentials: credentials);
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(tokenExpirationTimeInDays),
+                signingCredentials: credentials);
             var tokenHandler = new JwtSecurityTokenHandler();
 
             return tokenHandler.WriteToken(token);
@@ -43,47 +46,29 @@ namespace Services.AuthService
         public string GenerateRefreshToken()
         {
             var secureRandomBytes = new byte[128];
-
             using var randomNumberGenerator = RandomNumberGenerator.Create();
-
             randomNumberGenerator.GetBytes(secureRandomBytes);
-
             return Convert.ToBase64String(secureRandomBytes);
         }
 
         public string HashingPassword(string password)
         {
-            byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-
-            StringBuilder builder = new();
-
-            for(int i = 0; i < bytes.Length; i++)
-            {
-                builder.Append(bytes[i].ToString("x2"));
-            }
-
-            return builder.ToString();
+            return BCrypt.Net.BCrypt.HashPassword(password, BCrypt.Net.BCrypt.GenerateSalt(12));
         }
 
-        public ValidationFieldsUser? UniqueEmailAndUsername(string email, string username)
+        public bool VerifyPassword(string password, string hash)
         {
-            var users = _context.Users.ToList();
-            var emailExists = users.Exists(x => x.Email == email);
-            var usernameExists = users.Exists(x => x.Username == username);
+            return BCrypt.Net.BCrypt.Verify(password, hash);
+        }
 
-            if (emailExists)
-            {
-                return ValidationFieldsUser.EmailUnavailable;
-            }
-            else if (usernameExists)
-            {
-                return ValidationFieldsUser.UsernameUnavailable;
-            }
-            else if (usernameExists && emailExists)
-            {
+        public ValidationFieldsUser? GetValidationErrorForEmailAndUsername(bool emailExists, bool usernameExists)
+        {
+            if (emailExists && usernameExists)
                 return ValidationFieldsUser.UsernameAndEmailUnavailable;
-            }
-
+            if (emailExists)
+                return ValidationFieldsUser.EmailUnavailable;
+            if (usernameExists)
+                return ValidationFieldsUser.UsernameUnavailable;
             return null;
         }
     }

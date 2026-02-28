@@ -1,4 +1,4 @@
-﻿using Application.Mappings;
+using Application.Mappings;
 using Application.UserCQ.Commands;
 using Application.UserCQ.Validators;
 using FluentValidation;
@@ -10,9 +10,9 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Application.Abstractions;
 using Domain.Abstractions;
 using Services.AuthService;
-using Infra.Repository.IRepositories;
 using Infra.Repository.Repositories;
 using Infra.Repository.UnitOfWork;
 using API.Middleware;
@@ -88,7 +88,7 @@ namespace API
 
         public static void AddValidations(this WebApplicationBuilder builder)
         {
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateUserComandValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateUserCommandValidator>();
             builder.Services.AddFluentValidationAutoValidation();
         }
 
@@ -105,6 +105,7 @@ namespace API
         public static void AddRepositories(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ICardRepository, CardRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }

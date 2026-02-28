@@ -1,40 +1,59 @@
-﻿
-using Microsoft.Extensions.Primitives;
-using Microsoft.OpenApi.Any;
-using Microsoft.VisualBasic;
-using System.Reflection.Metadata;
-using System.Security.Authentication;
-using System;
+using System.Net;
+using System.Text.Json;
 using Application.Response;
-using Application.UserCQ.ViewModels;
 using Domain.Enum;
 using Domain.Utils;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
-namespace API.Middleware
+namespace API.Middleware;
+
+public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
-    public class ExceptionMiddleware(RequestDelegate next)
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
-        private readonly RequestDelegate _next = next;
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<ExceptionMiddleware> _logger = logger;
 
-        public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            try
-            {
-                await _next.Invoke(context);
-            }
-            catch (Exception ex) 
-            {
-                await HandleExceptionAsync(context, ex);
-            }
+            await _next.Invoke(context);
         }
-
-        private async Task<Task> HandleExceptionAsync(HttpContext context, Exception exception)
+        catch (Exception ex)
         {
-
-            var error = new ErrorInfo(BusinessError.InternalServerError.GetDescription(), 500);
-            context.Response.StatusCode = error.HTTPStatus;
-            return context.Response.WriteAsync(error.ToJson());
+            await HandleExceptionAsync(context, ex);
         }
+    }
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        _logger.LogError(exception, "Unhandled exception. TraceId: {TraceId}", context.TraceIdentifier);
+
+        var (statusCode, title, detail) = exception switch
+        {
+            ValidationException => ((int)HttpStatusCode.BadRequest, "Validation error", exception.Message),
+            _ => ((int)HttpStatusCode.InternalServerError, "Internal server error", BusinessError.InternalServerError.GetDescription())
+        };
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/problem+json";
+
+        var problemDetails = new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc7807",
+            Title = title,
+            Detail = detail,
+            Status = statusCode,
+            Instance = context.Request.Path,
+            Extensions = { ["traceId"] = context.TraceIdentifier }
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
     }
 }

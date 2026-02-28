@@ -1,7 +1,8 @@
-﻿using Application.UserCQ.Commands;
+using Application.CardCQ.Commands;
+using Application.CardCQ.ViewModels;
+using Application.UserCQ.Commands;
 using Application.UserCQ.ViewModels;
 using AutoMapper;
-using Domain.Abstractions;
 using Domain.Entity;
 
 namespace Application.Mappings
@@ -10,10 +11,16 @@ namespace Application.Mappings
     {
         public ProfileMappings()
         {
+            CreateMap<CreateCardCommand, Card>()
+                .ForMember(d => d.Id, o => o.Ignore())
+                .ForMember(d => d.CreatedAt, o => o.Ignore());
+            CreateMap<Card, CardViewModel>();
+
             CreateMap<CreateUserCommand, User>()
-                .ForMember(x => x.RefreshToken, x => x.AllowNull())
-                .ForMember(x => x.RefreshTokenExpirationTime, x => x.MapFrom(x => DateTime.Now.AddDays(10)))
-                .ForMember(x => x.PasswordHash, x => x.AllowNull());
+                .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
+                .ForMember(d => d.RefreshToken, o => o.Ignore())
+                .ForMember(d => d.RefreshTokenExpirationTime, o => o.Ignore())
+                .ForMember(d => d.PasswordHash, o => o.Ignore());
 
             CreateMap<User, RefreshTokenViewModel>()
                 .ForMember(x => x.TokenJWT, x => x.AllowNull());

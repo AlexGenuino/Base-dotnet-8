@@ -14,8 +14,6 @@ namespace API.Controllers
     public class AuthController(IMediator mediator, IConfiguration configuration, IMapper mapper, IHttpContextAccessor contextAccessor) : BaseController(contextAccessor, configuration)
     {
         private readonly IMediator _mediator = mediator;
-        private readonly IConfiguration _configuration = configuration;
-        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
         private readonly IMapper _mapper = mapper;
 
         [HttpPost("create-user")]

@@ -1,4 +1,4 @@
-﻿using Domain.Enum;
+using Domain.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entity
@@ -16,11 +16,12 @@ namespace Domain.Entity
         public string? Description { get; set; }
 
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
-        
+
         public DateTime? Deadline { get; set; }
-        
+
+        public Guid ListId { get; set; }
         public ListCard? List { get; set; }
-        
+
         public StatusCard Status { get; set; }
     }
 }
