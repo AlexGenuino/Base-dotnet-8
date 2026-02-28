@@ -18,7 +18,7 @@ namespace Infra.Repository.UnitOfWork
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var entity = await _context.Set<T>().FindAsync([id], cancellationToken);
+            var entity = await _context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
             if (entity is not null)
                 _context.Set<T>().Remove(entity);
         }
@@ -30,7 +30,7 @@ namespace Infra.Repository.UnitOfWork
 
         public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Set<T>().FindAsync([id], cancellationToken);
+            return await _context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
         }
 
         public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default)

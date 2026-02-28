@@ -1,13 +1,7 @@
-global using Xunit;
-global using Moq;
 global using System;
 global using System.Collections.Generic;
-global using System.Linq;
 global using System.Threading;
 global using System.Threading.Tasks;
-global using MediatR;
-global using AutoMapper;
-global using FluentValidation;
-global using OneOf;
+global using Microsoft.EntityFrameworkCore;
 global using Application.Abstractions;
 global using Domain.Entity;
