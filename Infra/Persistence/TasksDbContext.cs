@@ -1,7 +1,4 @@
-﻿using Domain.Entity;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infra.Persistence
+﻿namespace Infra.Persistence
 {
     public class TasksDbContext(DbContextOptions options) : DbContext(options)
     {

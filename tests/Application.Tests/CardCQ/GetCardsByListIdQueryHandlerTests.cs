@@ -1,9 +1,6 @@
-using Application.Abstractions;
 using Application.CardCQ.Handlers;
 using Application.CardCQ.Queries;
 using Application.CardCQ.ViewModels;
-using AutoMapper;
-using Domain.Entity;
 using Domain.Enum;
 
 namespace Application.Tests.CardCQ;

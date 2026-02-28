@@ -1,14 +1,10 @@
-using Application.Abstractions;
 using Application.Response;
 using Application.UserCQ.Commands;
 using Application.UserCQ.ViewModels;
-using AutoMapper;
 using Domain.Abstractions;
 using Domain.Enum;
 using Domain.Utils;
-using MediatR;
 using Microsoft.Extensions.Configuration;
-using OneOf;
 
 namespace Application.UserCQ.Handlers
 {

@@ -1,6 +1,4 @@
-using Application.Abstractions;
 using Infra.Persistence;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Infra.Repository.UnitOfWork

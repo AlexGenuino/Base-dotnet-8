@@ -1,10 +1,6 @@
-using Application.Abstractions;
 using Application.CardCQ.Commands;
 using Application.CardCQ.Handlers;
-using Application.Response;
-using Domain.Entity;
 using Domain.Enum;
-using MediatR;
 
 namespace Application.Tests.CardCQ;
 

@@ -1,8 +1,5 @@
-using Application.Abstractions;
-using Domain.Entity;
 using Infra.Persistence;
 using Infra.Repository.UnitOfWork;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infra.Repository.Repositories
 {

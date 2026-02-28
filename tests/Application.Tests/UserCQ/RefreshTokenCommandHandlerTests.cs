@@ -1,12 +1,7 @@
-using Application.Abstractions;
-using Application.Response;
 using Application.UserCQ.Commands;
 using Application.UserCQ.Handlers;
 using Application.UserCQ.ViewModels;
-using AutoMapper;
 using Domain.Abstractions;
-using Domain.Entity;
-using Domain.Enum;
 using Microsoft.Extensions.Configuration;
 
 namespace Application.Tests.UserCQ;
